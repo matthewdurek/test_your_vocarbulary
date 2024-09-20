@@ -1,4 +1,4 @@
-#Bread ideas : garlic bread,
+#Bread ideas : 
 #Pun ideas : 'leaven the playing field'
 
 import tkinter as tk
@@ -30,6 +30,7 @@ current_question = 0
 score = 0
 selected_bread = None
 answer_buttons = []
+question_frame = None #Store the current question frame
 
 # Function to check the selected answer
 def check_answer(answer):
@@ -45,32 +46,44 @@ def check_answer(answer):
 # Function to end the quiz and show the final score with appropriate message
 def end_quiz():
     global score
-    # Determine message based on score range
-    if score <= 10:
+    total_questions = len(BREADS)
+    percentage = (score / total_questions) * 100
+    # Determine message based on percentage of total correct
+    if percentage <= 15:
         message = "You're toast!"
-    elif score <= 15:
-        message = "Your knowledge is crusty..."
-    elif score <= 20:
-        message = "Kneads improvement!"
-    elif score <= 25:
+    elif percentage <= 30:
+        message = "Your knowledge is kinda crusty..."
+    elif percentage <= 50:
+        message = "Kneads improvement."
+    elif percentage <= 70:
         message = "More proofing required."
-    elif score <= 30:
+    elif percentage <= 85:
         message = "Bread is the yeast of your worries!"
-    else:
+    elif percentage < 100:
         message = "You sliced right through it!"
+    else:
+        message = "You got all that bread!"
 
     # Show the final score and message
-    messagebox.showinfo("Quiz Complete", f"Your score: {score}/{len(BREADS)}\n{message}")
+    messagebox.showinfo("Quiz Complete", f"Your score: {score}/{total_questions} ({percentage:.2f}%)\n{message}")
     root.quit()
 
 # Function to display a random question with bread image and 4 options
 def display_question():
-    global selected_bread, answer_buttons, image_label
+    global selected_bread, answer_buttons, image_label, question_frame
     
+    # Destroy the previous question frame if it exists
+    if question_frame is not None:
+        question_frame.destroy()
+
     # Clear previous buttons
     for btn in answer_buttons:
         btn.destroy()
-    
+
+    # Create a frame to hold the image and buttons and center it
+    question_frame = tk.Frame(root)
+    question_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+ 
     # Choose a random bread for the current question
     selected_bread = random.choice(breads) 
     breads.remove(selected_bread)
@@ -91,20 +104,25 @@ def display_question():
             ratio = maxvalue/image.height
             image = image.resize((int(width*ratio), int(height*ratio))) #Aspect ratio adjustment
             bread_image = ImageTk.PhotoImage(image)
-            image_label.config(image=bread_image)
+            image_label = tk.Label(question_frame, image=bread_image)
+            #image_label.config(image=bread_image)
             image_label.image = bread_image  # Keep reference to avoid garbage collection
+            image_label.pack(pady=20)
         except Exception as e:
             print(f"Error loading image: {e}")
             # Show a grey box as a placeholder in case of error
             bread_image = ImageTk.PhotoImage(Image.new("RGB", (300, 300), color="grey"))
             image_label.config(image=bread_image)
             image_label.image = bread_image  # Keep reference to avoid garbage collection
+            image_label.pack(pady=20)
     else:
         print(f"Image not found at: {bread_image_path}")
         # Placeholder if image is not found
         bread_image = ImageTk.PhotoImage(Image.new("RGB", (300, 300), color="gray"))
-        image_label.config(image=bread_image)
+        image_label = tk.Label(question_frame, image=bread_image)
+        #image_label.config(image=bread_image)
         image_label.image = bread_image  # Keep reference to avoid garbage collection
+        image_label.pack(pady=20)
     
     # Generate 3 random wrong answers
     wrong_answers = random.sample([bread for bread in BREADS if bread != selected_bread], 3)
@@ -116,7 +134,7 @@ def display_question():
     # Display answer buttons
     answer_buttons = []
     for i, option in enumerate(options):
-        btn = tk.Button(root, text=option, command=lambda opt=option: check_answer(opt))
+        btn = tk.Button(question_frame, text=option, command=lambda opt=option: check_answer(opt), font=("Times New Roman", 14))
         btn.pack(pady=5)
         answer_buttons.append(btn)
 
@@ -126,15 +144,19 @@ def display_menu():
     for widget in root.winfo_children():
         widget.destroy()
 
+    # Create a frame to hold all the widgets and center it
+    menu_frame = tk.Frame(root)
+    menu_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
     # Display the question
-    question_label = tk.Label(root, text="Will you rise to the occasion?", font=("Arial", 18))
+    question_label = tk.Label(menu_frame, text="Will you rise to the occasion?", font=("Times New Roman", 18))
     question_label.pack(pady=20)
 
     # Display the buttons
-    bready_button = tk.Button(root, text="I'm bready!", font=("Arial", 14), command=start_quiz)
+    bready_button = tk.Button(menu_frame, text="I'm bready!", font=("Times New Roman", 14), command=start_quiz)
     bready_button.pack(pady=10)
 
-    gluten_free_button = tk.Button(root, text="Gluten-Free Option", font=("Arial", 14), command=root.quit)
+    gluten_free_button = tk.Button(menu_frame, text="Gluten-Free Option", font=("Times New Roman", 14), command=root.quit)
     gluten_free_button.pack(pady=10)
 
 # Function to start the quiz
